@@ -1,0 +1,181 @@
+/* C:\Users\lucas\Desktop\amigo_secreto\src\css\landing.css */
+
+/* ===== Header ===== */
+.landing-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.landing-header .emoji-title {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.landing-header h1 {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ===== Formulário de código ===== */
+.code-form {
+  animation: fadeInUp 0.6s ease-out 0.15s both;
+}
+
+.code-input-wrapper {
+  position: relative;
+}
+
+#code-input {
+  font-size: 1.5rem;
+  text-align: center;
+  letter-spacing: 0.25em;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 1rem;
+}
+
+#code-input::placeholder {
+  letter-spacing: 0.15em;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  opacity: 0.6;
+  font-size: 1rem;
+}
+
+/* ===== Seção de resultado ===== */
+#result-section {
+  text-align: center;
+}
+
+#result-section .result-card {
+  background: linear-gradient(135deg, var(--color-surface) 0%, #1f2240 100%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 2rem 1.5rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.result-label {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.25rem;
+}
+
+.result-giver {
+  font-size: 1.1rem;
+  color: var(--color-accent);
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.result-divider {
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+  margin: 0 auto 1.5rem;
+}
+
+.result-receiver-label {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.result-receiver-name {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.3;
+  padding: 0.25rem 0;
+}
+
+.result-emoji {
+  font-size: 3rem;
+  display: block;
+  margin-top: 1rem;
+}
+
+/* ===== Animação de revelação ===== */
+.reveal-animate .result-card {
+  animation: scaleReveal 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.reveal-animate .result-receiver-name {
+  animation: fadeInUp 0.5s ease-out 0.35s both;
+}
+
+.reveal-animate .result-emoji {
+  animation: fadeInUp 0.5s ease-out 0.55s both;
+}
+
+/* ===== Dicas e textos para telas de identificação ===== */
+.hint-text {
+  font-size: 0.95rem;
+  color: var(--color-text);
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+}
+
+.sub-hint {
+  display: inline-block;
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--color-accent);
+}
+
+.name-input-wrapper input {
+  font-size: 1.1rem;
+  padding: 0.85rem 1rem;
+}
+
+/* ===== Tela 3: Confirmação ===== */
+.confirm-card {
+  padding: 2.25rem 1.75rem;
+}
+
+.confirm-question {
+  font-size: 1.25rem;
+  color: var(--color-text);
+  line-height: 1.4;
+}
+
+.highlight-name {
+  color: var(--color-accent);
+  font-size: 1.35rem;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.confirm-warning {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+/* ===== Footer link ===== */
+.footer-link {
+  text-align: center;
+  margin-top: 2rem;
+  animation: fadeInUp 0.6s ease-out 0.3s both;
+}
+
+.footer-link a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-size: 0.8rem;
+  transition: color var(--transition);
+}
+
+.footer-link a:hover {
+  color: var(--color-accent);
+}

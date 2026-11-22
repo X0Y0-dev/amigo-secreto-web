@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Descubra quem é o seu amigo secreto! Informe o código recebido para ver o resultado.">
+  <title>🎁 Amigo Secreto</title>
+  <link rel="stylesheet" href="/src/css/global.css">
+  <link rel="stylesheet" href="/src/css/landing.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎁</text></svg>">
+</head>
+<body>
+  <main class="container" role="main">
+    <!-- Cabeçalho -->
+    <header class="landing-header">
+      <span class="emoji-title" aria-hidden="true">🎄🎁🎅</span>
+      <h1>Amigo Secreto</h1>
+      <p class="subtitle" id="page-subtitle">Descubra quem você tirou! Informe seu código abaixo.</p>
+    </header>
+
+    <!-- TELA 1: Entrada do Código -->
+    <section id="step-code-section" class="code-form">
+      <div class="card">
+        <label for="code-input">Seu código pessoal</label>
+        <div class="code-input-wrapper">
+          <input
+            type="text"
+            id="code-input"
+            placeholder="XXXX-XXXX"
+            maxlength="9"
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            aria-label="Código pessoal no formato XXXX-XXXX"
+          >
+        </div>
+
+        <div id="code-status-message" class="status-message" role="alert" aria-live="polite"></div>
+
+        <button
+          type="button"
+          id="code-submit-btn"
+          class="btn btn-primary btn-block mt-2"
+          disabled
+          aria-label="Continuar com o código digitado"
+        >
+          🎁 Continuar
+        </button>
+      </div>
+    </section>
+
+    <!-- TELA 2: Entrada do Nome do Participante -->
+    <section id="step-name-section" class="code-form hidden" aria-live="polite">
+      <div class="card">
+        <h2>👤 Quem é você?</h2>
+        <p class="hint-text">
+          Digite seu nome <strong>exatamente como o organizador cadastrou</strong>.
+          <br>
+          <span class="sub-hint">💡 Dica: use o mesmo nome que veio no convite do WhatsApp.</span>
+        </p>
+
+        <label for="name-input" class="mt-2">Seu nome completo</label>
+        <div class="name-input-wrapper">
+          <input
+            type="text"
+            id="name-input"
+            placeholder="Ex.: João Silva"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="words"
+            spellcheck="false"
+            aria-label="Digite seu nome exatamente como no convite"
+          >
+        </div>
+
+        <div id="name-status-message" class="status-message" role="alert" aria-live="polite"></div>
+
+        <button
+          type="button"
+          id="name-submit-btn"
+          class="btn btn-primary btn-block mt-2"
+          disabled
+        >
+          Continuar
+        </button>
+
+        <button
+          type="button"
+          id="name-back-btn"
+          class="btn btn-secondary btn-block mt-1"
+        >
+          ← Voltar para digitar outro código
+        </button>
+      </div>
+    </section>
+
+    <!-- TELA 3: Confirmação Definitiva -->
+    <section id="step-confirm-section" class="code-form hidden" aria-live="polite">
+      <div class="card confirm-card text-center">
+        <h2>⚠️ Confirme sua identidade</h2>
+        <p class="confirm-question mt-2">
+          Você é <strong id="confirm-name-display" class="highlight-name"></strong>?
+        </p>
+        <p class="confirm-warning">
+          Essa escolha é <strong>definitiva</strong>. Após confirmar, este código será vinculado exclusivamente a este nome.
+        </p>
+
+        <div id="confirm-status-message" class="status-message" role="alert" aria-live="polite"></div>
+
+        <button
+          type="button"
+          id="confirm-yes-btn"
+          class="btn btn-primary btn-block mt-2"
+        >
+          ✅ Sim, sou eu!
+        </button>
+
+        <button
+          type="button"
+          id="confirm-back-btn"
+          class="btn btn-secondary btn-block mt-1"
+        >
+          ← Voltar e corrigir o nome
+        </button>
+      </div>
+    </section>
+
+    <!-- TELA 4: Resultado do Sorteio -->
+    <section id="result-section" class="hidden" aria-live="polite">
+      <div class="result-card">
+        <p class="result-label">Você é</p>
+        <p class="result-giver" id="giver-name"></p>
+        <div class="result-divider" aria-hidden="true"></div>
+        <p class="result-receiver-label">Seu amigo secreto é:</p>
+        <p class="result-receiver-name" id="receiver-name"></p>
+        <span class="result-emoji" aria-hidden="true">🎉</span>
+      </div>
+
+      <button
+        type="button"
+        id="new-code-btn"
+        class="btn btn-secondary btn-block mt-2"
+      >
+        Usar outro código
+      </button>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-link">
+      <a href="/admin.html">Painel do Organizador</a>
+    </footer>
+  </main>
+
+  <script type="module" src="/src/js/main.js"></script>
+</body>
+</html>

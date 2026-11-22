@@ -1,0 +1,23 @@
+{
+  "name": "amigo-secreto",
+  "version": "1.0.0",
+  "description": "Sistema de Amigo Secreto seguro e sem spoilers para deploy na Vercel com Upstash Redis",
+  "type": "module",
+  "scripts": {
+    "dev": "node dev-server.js",
+    "start": "node dev-server.js",
+    "test": "node test/draw-algorithm.test.js"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.34.4"
+  },
+  "keywords": [
+    "amigo-secreto",
+    "secret-santa",
+    "vercel",
+    "upstash",
+    "redis"
+  ],
+  "author": "",
+  "license": "MIT"
+}

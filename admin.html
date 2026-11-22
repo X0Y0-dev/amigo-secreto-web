@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>⚙️ Admin — Amigo Secreto</title>
+  <link rel="stylesheet" href="/src/css/global.css">
+  <link rel="stylesheet" href="/src/css/draw.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+  <style>
+    /* Estilos extras para a gestão de participantes */
+    .participant-list {
+      list-style: none;
+      padding: 0;
+      margin: 0.75rem 0;
+    }
+    .participant-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 0.75rem;
+      background: var(--color-bg);
+      border-radius: var(--radius-sm);
+      margin-bottom: 0.4rem;
+      border: 1px solid var(--color-border);
+      font-size: 0.9rem;
+      animation: fadeInUp 0.25s ease-out;
+    }
+    .participant-list li .name {
+      font-weight: 600;
+    }
+    .participant-list li .remove-btn {
+      background: none;
+      border: none;
+      color: var(--color-error);
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      transition: background var(--transition);
+      line-height: 1;
+    }
+    .participant-list li .remove-btn:hover {
+      background: rgba(230, 57, 70, 0.15);
+    }
+    .add-participant-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .add-participant-row input {
+      flex: 1;
+    }
+    .add-participant-row .btn {
+      flex-shrink: 0;
+    }
+    .bulk-toggle {
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+      margin-bottom: 0.75rem;
+      display: inline-block;
+      transition: color var(--transition);
+    }
+    .bulk-toggle:hover {
+      color: var(--color-accent);
+    }
+    .empty-state {
+      text-align: center;
+      padding: 1.5rem;
+      color: var(--color-text-muted);
+      font-size: 0.9rem;
+    }
+    .reset-section {
+      border-top: 1px dashed var(--color-border);
+      padding-top: 1rem;
+      margin-top: 1rem;
+    }
+    .reset-section h2 {
+      color: var(--color-error) !important;
+    }
+    .btn-danger {
+      background: linear-gradient(135deg, #c1121f 0%, #780000 100%);
+    }
+    .btn-danger:not(:disabled):hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(193, 18, 31, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <main class="container" role="main">
+    <!-- Cabeçalho -->
+    <header class="admin-header">
+      <h1>⚙️ Painel do Organizador</h1>
+      <p class="subtitle">Gerencie o sorteio do Amigo Secreto</p>
+    </header>
+
+    <!-- Autenticação Admin -->
+    <section id="admin-auth-section" class="admin-auth-section">
+      <div class="card">
+        <label for="admin-key-input">Chave do Administrador</label>
+        <input
+          type="password"
+          id="admin-key-input"
+          placeholder="Digite a chave de acesso"
+          autocomplete="off"
+          aria-label="Chave de acesso do administrador"
+        >
+        <button
+          type="button"
+          id="admin-login-btn"
+          class="btn btn-primary btn-block mt-2"
+        >
+          🔐 Acessar painel
+        </button>
+        <div id="admin-auth-status" class="status-message" role="alert" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- Painel Admin (escondido até autenticar) -->
+    <section id="admin-panel" class="admin-panel hidden">
+
+      <!-- Status -->
+      <div class="card">
+        <h2>📊 Status do Sorteio</h2>
+        <div id="draw-status-badge" class="status-badge pending">
+          <span class="dot"></span>
+          <span id="draw-status-text">Pendente</span>
+        </div>
+        <span class="participant-count mt-1" id="participant-count-badge">0 participantes</span>
+      </div>
+
+      <!-- Cadastro de Participantes -->
+      <div class="card" id="participants-card">
+        <h2>👥 Participantes</h2>
+
+        <!-- Adicionar um a um -->
+        <div id="add-individual-section">
+          <label for="add-name-input">Adicionar participante</label>
+          <div class="add-participant-row">
+            <input
+              type="text"
+              id="add-name-input"
+              placeholder="Nome do participante"
+              autocomplete="off"
+              aria-label="Nome do participante para adicionar"
+            >
+            <button type="button" id="add-name-btn" class="btn btn-success btn-sm">+ Adicionar</button>
+          </div>
+        </div>
+
+        <!-- Lista visual de participantes -->
+        <ul class="participant-list" id="participant-list" aria-label="Lista de participantes cadastrados"></ul>
+        <div id="empty-participants" class="empty-state">
+          Nenhum participante cadastrado ainda.
+        </div>
+
+        <!-- Toggle para modo em lote -->
+        <button type="button" class="bulk-toggle" id="bulk-toggle-btn">📝 Adicionar vários de uma vez (colar lista)</button>
+
+        <!-- Textarea em lote (escondido por padrão) -->
+        <div id="bulk-section" class="hidden">
+          <label for="names-textarea">Nomes, um por linha (substitui a lista atual)</label>
+          <textarea
+            id="names-textarea"
+            placeholder="Ana&#10;Bruno&#10;Carlos&#10;Diana&#10;Eduardo"
+            aria-label="Lista de nomes dos participantes, um por linha"
+          ></textarea>
+          <button
+            type="button"
+            id="save-bulk-btn"
+            class="btn btn-success btn-block mt-2"
+          >
+            💾 Importar lista
+          </button>
+        </div>
+
+        <button
+          type="button"
+          id="save-participants-btn"
+          class="btn btn-primary btn-block mt-2"
+        >
+          💾 Salvar participantes no servidor
+        </button>
+        <div id="participants-status" class="status-message" role="alert" aria-live="polite"></div>
+      </div>
+
+      <!-- Gerar Sorteio -->
+      <div class="card" id="generate-card">
+        <h2>🎲 Realizar Sorteio</h2>
+        <p style="color: var(--color-text-muted); font-size: 0.875rem; margin-bottom: 1rem;">
+          Atenção: o sorteio só pode ser realizado <strong>uma única vez</strong>.
+          Após realizado, os códigos só serão exibidos nesta tela. Copie ou baixe imediatamente.
+        </p>
+        <button
+          type="button"
+          id="generate-btn"
+          class="btn btn-primary btn-block"
+        >
+          🎲 Gerar sorteio e códigos
+        </button>
+        <div id="generate-status" class="status-message" role="alert" aria-live="polite"></div>
+      </div>
+
+      <!-- Lista de Códigos (aparece após o sorteio) -->
+      <div class="card hidden" id="codes-card">
+        <h2>🔑 Códigos Gerados</h2>
+        <p style="color: var(--color-text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+          Envie o código individual de cada participante. <strong>Esta lista não será exibida novamente!</strong>
+        </p>
+
+        <ul class="codes-list" id="codes-list" aria-label="Lista de códigos dos participantes"></ul>
+
+        <div class="codes-actions">
+          <button type="button" id="copy-codes-btn" class="btn btn-secondary btn-sm">📋 Copiar tudo</button>
+          <button type="button" id="download-csv-btn" class="btn btn-secondary btn-sm">⬇️ Baixar CSV</button>
+        </div>
+
+        <!-- Links do WhatsApp -->
+        <div class="whatsapp-links mt-2" id="whatsapp-links-section">
+          <h3>📱 Enviar por WhatsApp</h3>
+          <div id="whatsapp-links-list"></div>
+        </div>
+      </div>
+
+      <!-- Reset (para testes) -->
+      <div class="card" id="reset-card">
+        <div class="reset-section">
+          <h2>🗑️ Resetar Sorteio (Testes)</h2>
+          <p style="color: var(--color-text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+            Remove <strong>todos</strong> os dados: participantes, códigos e resultados.
+            Use apenas para testes. Esta ação é irreversível.
+          </p>
+          <button type="button" id="reset-btn" class="btn btn-danger btn-block">
+            🗑️ Resetar tudo
+          </button>
+          <div id="reset-status" class="status-message" role="alert" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-link mt-3">
+      <a href="/">← Voltar para a página principal</a>
+    </footer>
+  </main>
+
+  <!-- Overlay de confirmação (sorteio) -->
+  <div id="confirm-overlay" class="confirm-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+    <div class="confirm-dialog">
+      <h3 id="confirm-title">⚠️ Confirmar Sorteio</h3>
+      <p id="confirm-message">Tem certeza que deseja realizar o sorteio? Esta ação <strong>não pode ser desfeita</strong>. Os códigos só aparecerão uma vez.</p>
+      <div class="btn-row">
+        <button type="button" id="confirm-cancel-btn" class="btn btn-secondary">Cancelar</button>
+        <button type="button" id="confirm-ok-btn" class="btn btn-primary">Sim, sortear!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay de confirmação (reset) -->
+  <div id="reset-confirm-overlay" class="confirm-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="reset-confirm-title">
+    <div class="confirm-dialog">
+      <h3 id="reset-confirm-title">🗑️ Confirmar Reset</h3>
+      <p>Tem certeza que deseja <strong>apagar tudo</strong>? Participantes, códigos e resultados serão removidos permanentemente.</p>
+      <div class="btn-row">
+        <button type="button" id="reset-confirm-cancel-btn" class="btn btn-secondary">Cancelar</button>
+        <button type="button" id="reset-confirm-ok-btn" class="btn btn-danger">Sim, apagar tudo!</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { fetchAdminStatus, saveParticipants, fetchParticipants, generateDraw, resetDraw } from '/src/js/api.js';
+
+    let adminKey = '';
+    // Lista local de participantes que espelha o que o admin está construindo
+    let localParticipants = [];
+
+    // --- Elementos do DOM ---
+    const adminAuthSection = document.getElementById('admin-auth-section');
+    const adminKeyInput = document.getElementById('admin-key-input');
+    const adminLoginBtn = document.getElementById('admin-login-btn');
+    const adminAuthStatus = document.getElementById('admin-auth-status');
+    const adminPanel = document.getElementById('admin-panel');
+    const drawStatusBadge = document.getElementById('draw-status-badge');
+    const drawStatusText = document.getElementById('draw-status-text');
+    const participantCountBadge = document.getElementById('participant-count-badge');
+    const participantsCard = document.getElementById('participants-card');
+    const participantsStatus = document.getElementById('participants-status');
+    const participantListEl = document.getElementById('participant-list');
+    const emptyParticipants = document.getElementById('empty-participants');
+    const addNameInput = document.getElementById('add-name-input');
+    const addNameBtn = document.getElementById('add-name-btn');
+    const bulkToggleBtn = document.getElementById('bulk-toggle-btn');
+    const bulkSection = document.getElementById('bulk-section');
+    const namesTextarea = document.getElementById('names-textarea');
+    const saveBulkBtn = document.getElementById('save-bulk-btn');
+    const saveParticipantsBtn = document.getElementById('save-participants-btn');
+    const generateCard = document.getElementById('generate-card');
+    const generateBtn = document.getElementById('generate-btn');
+    const generateStatus = document.getElementById('generate-status');
+    const codesCard = document.getElementById('codes-card');
+    const codesList = document.getElementById('codes-list');
+    const copyCodesBtn = document.getElementById('copy-codes-btn');
+    const downloadCsvBtn = document.getElementById('download-csv-btn');
+    const whatsappLinksList = document.getElementById('whatsapp-links-list');
+    const confirmOverlay = document.getElementById('confirm-overlay');
+    const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
+    const confirmOkBtn = document.getElementById('confirm-ok-btn');
+    const resetCard = document.getElementById('reset-card');
+    const resetBtn = document.getElementById('reset-btn');
+    const resetStatus = document.getElementById('reset-status');
+    const resetConfirmOverlay = document.getElementById('reset-confirm-overlay');
+    const resetConfirmCancelBtn = document.getElementById('reset-confirm-cancel-btn');
+    const resetConfirmOkBtn = document.getElementById('reset-confirm-ok-btn');
+
+    // ======================================================================
+    // LOGIN
+    // ======================================================================
+    adminLoginBtn.addEventListener('click', handleLogin);
+    adminKeyInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleLogin();
+    });
+
+    async function handleLogin() {
+      const key = adminKeyInput.value.trim();
+      if (!key) {
+        adminAuthStatus.className = 'status-message error';
+        adminAuthStatus.textContent = 'Por favor, informe a chave de administrador.';
+        return;
+      }
+
+      adminAuthStatus.className = 'status-message loading';
+      adminAuthStatus.textContent = 'Verificando...';
+
+      try {
+        await fetchAdminStatus(key);
+        adminKey = key;
+        adminAuthSection.classList.add('hidden');
+        adminPanel.classList.remove('hidden');
+        await refreshAll();
+      } catch {
+        adminAuthStatus.className = 'status-message error';
+        adminAuthStatus.textContent = '❌ Chave inválida ou erro de conexão.';
+      }
+    }
+
+    // ======================================================================
+    // REFRESH STATUS + PARTICIPANTES
+    // ======================================================================
+    async function refreshAll() {
+      await refreshStatus();
+      await loadParticipants();
+    }
+
+    async function refreshStatus() {
+      try {
+        const data = await fetchAdminStatus(adminKey);
+        const isDone = data.status === 'done';
+
+        drawStatusBadge.className = `status-badge ${isDone ? 'done' : 'pending'}`;
+        drawStatusText.textContent = isDone ? 'Sorteio Realizado ✓' : 'Pendente';
+        participantCountBadge.textContent = `${data.participantCount} participante${data.participantCount !== 1 ? 's' : ''}`;
+
+        if (isDone) {
+          participantsCard.classList.add('hidden');
+          generateCard.classList.add('hidden');
+        } else {
+          participantsCard.classList.remove('hidden');
+          generateCard.classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error('Erro ao consultar status:', error);
+      }
+    }
+
+    async function loadParticipants() {
+      try {
+        const data = await fetchParticipants(adminKey);
+        if (data.participants && data.participants.length > 0) {
+          localParticipants = [...data.participants];
+        } else {
+          localParticipants = [];
+        }
+        renderParticipantList();
+      } catch {
+        // Pode não ter nenhum ainda
+      }
+    }
+
+    // ======================================================================
+    // GESTÃO DE PARTICIPANTES (adicionar/remover individual)
+    // ======================================================================
+    function renderParticipantList() {
+      participantListEl.innerHTML = '';
+
+      if (localParticipants.length === 0) {
+        emptyParticipants.classList.remove('hidden');
+      } else {
+        emptyParticipants.classList.add('hidden');
+        for (let i = 0; i < localParticipants.length; i++) {
+          const li = document.createElement('li');
+
+          const nameSpan = document.createElement('span');
+          nameSpan.className = 'name';
+          nameSpan.textContent = localParticipants[i];
+
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'remove-btn';
+          removeBtn.type = 'button';
+          removeBtn.textContent = '✕';
+          removeBtn.title = `Remover ${localParticipants[i]}`;
+          removeBtn.setAttribute('aria-label', `Remover ${localParticipants[i]}`);
+          removeBtn.addEventListener('click', () => {
+            localParticipants.splice(i, 1);
+            renderParticipantList();
+          });
+
+          li.appendChild(nameSpan);
+          li.appendChild(removeBtn);
+          participantListEl.appendChild(li);
+        }
+      }
+
+      // Atualiza o textarea em lote para manter sincronizado
+      namesTextarea.value = localParticipants.join('\n');
+    }
+
+    // Adicionar participante individualmente
+    function addParticipant() {
+      const name = addNameInput.value.trim();
+      if (!name) return;
+
+      // Verifica duplicata (case-insensitive)
+      const normalized = name.toLowerCase();
+      if (localParticipants.some(p => p.toLowerCase() === normalized)) {
+        participantsStatus.className = 'status-message error';
+        participantsStatus.textContent = `"${name}" já está na lista.`;
+        return;
+      }
+
+      localParticipants.push(name);
+      addNameInput.value = '';
+      addNameInput.focus();
+      participantsStatus.className = 'status-message';
+      participantsStatus.textContent = '';
+      renderParticipantList();
+    }
+
+    addNameBtn.addEventListener('click', addParticipant);
+    addNameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addParticipant();
+      }
+    });
+
+    // Toggle do modo em lote
+    bulkToggleBtn.addEventListener('click', () => {
+      bulkSection.classList.toggle('hidden');
+      if (!bulkSection.classList.contains('hidden')) {
+        namesTextarea.value = localParticipants.join('\n');
+        namesTextarea.focus();
+        bulkToggleBtn.textContent = '👤 Voltar para modo individual';
+      } else {
+        bulkToggleBtn.textContent = '📝 Adicionar vários de uma vez (colar lista)';
+      }
+    });
+
+    // Importar lista em lote
+    saveBulkBtn.addEventListener('click', () => {
+      const rawNames = namesTextarea.value.trim();
+      if (!rawNames) {
+        participantsStatus.className = 'status-message error';
+        participantsStatus.textContent = 'A lista está vazia.';
+        return;
+      }
+
+      const names = rawNames
+        .split('\n')
+        .map(n => n.trim())
+        .filter(n => n.length > 0);
+
+      // Deduplicação
+      const seen = new Set();
+      const unique = [];
+      for (const name of names) {
+        const key = name.toLowerCase();
+        if (!seen.has(key)) {
+          seen.add(key);
+          unique.push(name);
+        }
+      }
+
+      localParticipants = unique;
+      renderParticipantList();
+      bulkSection.classList.add('hidden');
+      bulkToggleBtn.textContent = '📝 Adicionar vários de uma vez (colar lista)';
+      participantsStatus.className = 'status-message success';
+      participantsStatus.textContent = `✅ ${unique.length} nomes importados.`;
+    });
+
+    // Salvar participantes no servidor
+    saveParticipantsBtn.addEventListener('click', async () => {
+      if (localParticipants.length < 3) {
+        participantsStatus.className = 'status-message error';
+        participantsStatus.textContent = 'São necessários no mínimo 3 participantes.';
+        return;
+      }
+
+      participantsStatus.className = 'status-message loading';
+      participantsStatus.textContent = 'Salvando...';
+      saveParticipantsBtn.disabled = true;
+
+      try {
+        const data = await saveParticipants(adminKey, localParticipants);
+        participantsStatus.className = 'status-message success';
+        participantsStatus.textContent = `✅ ${data.count} participantes salvos com sucesso!`;
+        localParticipants = [...data.participants];
+        renderParticipantList();
+        await refreshStatus();
+      } catch (error) {
+        participantsStatus.className = 'status-message error';
+        participantsStatus.textContent = `❌ ${error.message}`;
+      } finally {
+        saveParticipantsBtn.disabled = false;
+      }
+    });
+
+    // ======================================================================
+    // GERAR SORTEIO
+    // ======================================================================
+    generateBtn.addEventListener('click', () => {
+      confirmOverlay.classList.remove('hidden');
+      confirmOkBtn.focus();
+    });
+
+    confirmCancelBtn.addEventListener('click', () => {
+      confirmOverlay.classList.add('hidden');
+    });
+
+    confirmOverlay.addEventListener('click', (e) => {
+      if (e.target === confirmOverlay) confirmOverlay.classList.add('hidden');
+    });
+
+    confirmOkBtn.addEventListener('click', async () => {
+      confirmOverlay.classList.add('hidden');
+
+      generateStatus.className = 'status-message loading';
+      generateStatus.textContent = '🎲 Sorteando...';
+      generateBtn.disabled = true;
+
+      try {
+        const data = await generateDraw(adminKey);
+
+        generateStatus.className = 'status-message success';
+        generateStatus.textContent = '✅ Sorteio realizado com sucesso!';
+
+        renderCodes(data.participants);
+        codesCard.classList.remove('hidden');
+        generateCard.classList.add('hidden');
+        participantsCard.classList.add('hidden');
+
+        await refreshStatus();
+      } catch (error) {
+        generateStatus.className = 'status-message error';
+        generateStatus.textContent = `❌ ${error.message}`;
+        generateBtn.disabled = false;
+      }
+    });
+
+    // ======================================================================
+    // RESET DO SORTEIO
+    // ======================================================================
+    resetBtn.addEventListener('click', () => {
+      resetConfirmOverlay.classList.remove('hidden');
+      resetConfirmOkBtn.focus();
+    });
+
+    resetConfirmCancelBtn.addEventListener('click', () => {
+      resetConfirmOverlay.classList.add('hidden');
+    });
+
+    resetConfirmOverlay.addEventListener('click', (e) => {
+      if (e.target === resetConfirmOverlay) resetConfirmOverlay.classList.add('hidden');
+    });
+
+    resetConfirmOkBtn.addEventListener('click', async () => {
+      resetConfirmOverlay.classList.add('hidden');
+
+      resetStatus.className = 'status-message loading';
+      resetStatus.textContent = '🗑️ Resetando...';
+      resetBtn.disabled = true;
+
+      try {
+        await resetDraw(adminKey);
+
+        resetStatus.className = 'status-message success';
+        resetStatus.textContent = '✅ Tudo foi resetado com sucesso.';
+
+        // Limpa o estado local
+        localParticipants = [];
+        renderParticipantList();
+
+        // Esconde os códigos se estavam visíveis
+        codesCard.classList.add('hidden');
+
+        // Re-exibe as seções de edição e atualiza status
+        participantsCard.classList.remove('hidden');
+        generateCard.classList.remove('hidden');
+        generateBtn.disabled = false;
+        generateStatus.className = 'status-message';
+        generateStatus.textContent = '';
+
+        await refreshStatus();
+      } catch (error) {
+        resetStatus.className = 'status-message error';
+        resetStatus.textContent = `❌ ${error.message}`;
+      } finally {
+        resetBtn.disabled = false;
+      }
+    });
+
+    // ======================================================================
+    // RENDERIZAR CÓDIGOS
+    // ======================================================================
+    let generatedParticipants = [];
+
+    function renderCodes(participants) {
+      generatedParticipants = participants;
+      codesList.innerHTML = '';
+
+      for (const p of participants) {
+        const li = document.createElement('li');
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'participant-name';
+        nameSpan.textContent = p.name;
+
+        const codeSpan = document.createElement('span');
+        codeSpan.className = 'participant-code';
+        codeSpan.textContent = p.code;
+
+        li.appendChild(nameSpan);
+        li.appendChild(codeSpan);
+        codesList.appendChild(li);
+      }
+
+      // Links de WhatsApp
+      whatsappLinksList.innerHTML = '';
+      const baseUrl = window.location.origin;
+
+      for (const p of participants) {
+        const div = document.createElement('div');
+        div.className = 'whatsapp-link-item';
+
+        const nameEl = document.createElement('span');
+        nameEl.className = 'name';
+        nameEl.textContent = p.name;
+
+        const msg = `🎁 Olá, ${p.name}! Seu código do Amigo Secreto é: *${p.code}*\n\nAcesse o link para descobrir quem você tirou:\n${baseUrl}`;
+        const waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+
+        const link = document.createElement('a');
+        link.href = waUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = '📱 Enviar';
+
+        div.appendChild(nameEl);
+        div.appendChild(link);
+        whatsappLinksList.appendChild(div);
+      }
+    }
+
+    // ======================================================================
+    // COPIAR / BAIXAR
+    // ======================================================================
+    copyCodesBtn.addEventListener('click', () => {
+      if (!generatedParticipants.length) return;
+
+      const text = generatedParticipants
+        .map(p => `${p.name}: ${p.code}`)
+        .join('\n');
+
+      navigator.clipboard.writeText(text).then(() => {
+        copyCodesBtn.textContent = '✅ Copiado!';
+        setTimeout(() => { copyCodesBtn.textContent = '📋 Copiar tudo'; }, 2000);
+      }).catch(() => {
+        const area = document.createElement('textarea');
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        document.body.removeChild(area);
+        copyCodesBtn.textContent = '✅ Copiado!';
+        setTimeout(() => { copyCodesBtn.textContent = '📋 Copiar tudo'; }, 2000);
+      });
+    });
+
+    downloadCsvBtn.addEventListener('click', () => {
+      if (!generatedParticipants.length) return;
+
+      let csv = 'Nome,Código\n';
+      for (const p of generatedParticipants) {
+        const safeName = p.name.replace(/"/g, '""');
+        csv += `"${safeName}","${p.code}"\n`;
+      }
+
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'amigo-secreto-codigos.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>

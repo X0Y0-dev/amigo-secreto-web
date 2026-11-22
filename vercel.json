@@ -1,0 +1,32 @@
+{
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "X-Frame-Options", "value": "DENY" }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; frame-ancestors 'none'"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    { "source": "/api/admin/participants", "destination": "/api/admin/participants" },
+    { "source": "/api/admin/generate", "destination": "/api/admin/generate" },
+    { "source": "/api/admin/status", "destination": "/api/admin/status" },
+    { "source": "/api/admin/reset", "destination": "/api/admin/reset" },
+    { "source": "/api/draw", "destination": "/api/draw" }
+  ]
+}
